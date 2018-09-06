@@ -8,7 +8,7 @@
 - name: Controller
   description: |
     Controller role that has the minimally needed services loaded and keystone
-    and barbican enabled.
+    and barbican enabled. This is meant for a Queens deployment.
   CountDefault: 1
   tags:
     - primary
