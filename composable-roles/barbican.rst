@@ -29,7 +29,14 @@ A few examples for composable roles
    swift_only.yaml for an example.
 
 #. There is another role to prepare an overcloud with just barbican and
-   keystone, which is quite nice to do some testing. Deploy this with:
+   keystone, which is quite nice to do some testing.
+  
+   First, you'll want to create a barbican-backend-simple-crypto.yaml file which
+   also sets the simple crypto backend as the default backendi.  Copy the template
+   barbican-backend-simple-crypto.yaml from /usr/share/openstack-tripleo-heat-templates
+   to /home/stack, and set BarbicanSimpleCryptoGlobalDefault to true.
+
+   Deploy this with:
 
    ::
 

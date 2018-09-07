@@ -1,0 +1,77 @@
+1. Log on your machine as root, create the 'oooq' user and set a password for it, install tmux, vim, editor
+
+useradd oooq
+echo "Redhat123" | passwd --stdin oooq
+
+# Needed for quickstart.sh --install-deps
+echo "oooq ALL=(root) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/oooq
+sudo chmod 0440 /etc/sudoers.d/oooq
+
+yum install -y tmux vim libguestfs-tools wget git
+
+# Due to https://bugzilla.redhat.com/show_bug.cgi?id=1581364 libvirt issue
+mkdir rpms; pushd rpms
+wget -r -nd -l1 -v --no-parent  http://file.rdu.redhat.com/~mbaldess/libvirt-rpms/ 
+rpm -Fvh *rpm
+popd
+systemctl restart libvirtd
+
+2. Log in as oooq (copy your ssh pub key to that user), start tmux
+su - oooq
+ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+ssh-copy-id root@127.0.0.2
+
+3. Download the lab instructions and config
+git clone https://github.com/JAORMX/tripleo-workshop.git
+cd /home/oooq/tripleo-workshop/oooq
+
+4. Download quickstart.sh:
+curl -O https://raw.githubusercontent.com/openstack/tripleo-quickstart/master/quickstart.sh
+chmod +x quickstart.sh
+./quickstart.sh --install-deps
+
+sudo rm -f /etc/sudoers.d/oooq
+
+5. Deploy oooq pointing it to 127.0.0.2
+Note: If your machine is not in Rhys' lab then, depending where the machine is, the
+"undercloud_docker_registry_mirror" and "*_image_url" settings might need tweaking.
+
+./quickstart.sh -R master-tripleo-ci --nodes nodes.yaml --config config-master.yaml 127.0.0.2
+
+I've seen the first invocation of this fail because it could not find config-master.yaml
+in the working area.  If this happens, run it again.
+
+The above takes ~35 minutes on the lab hardware.
+
+You should get the following VMs:
+3 controllers
+1 compute
+3 ceph storage nodes
+
+6. Generate a fencing.yaml
+Log on the undercloud (ssh -F ~/.quickstart/ssh.config.ansible undercloud) and run:
+openstack overcloud generate fencing --ipmi-lanplus instackenv.json --output fencing.yaml
+
+Also add '-e /home/stack/fencing.yaml' to the overcloud-deploy.sh script.
+
+7.  Work around various bugs
+
+openstack flavor set --property resources:CUSTOM_BAREMETAL='1' --property resources:DISK_GB='0' --property resources:MEMORY_MB='0' --property resources:VCPU='0' oooq_control
+openstack flavor set --property resources:CUSTOM_BAREMETAL='1' --property resources:DISK_GB='0' --property resources:MEMORY_MB='0' --property resources:VCPU='0' oooq_compute
+docker pull 192.168.24.1:8787/tripleomaster/centos-binary-neutron-server:current-tripleo
+
+I don't know if this is needed or not.  According to Oz, it should not be.
+Going to redeploy to confirm.
+
+openstack tripleo container image prepare default   --local-push-destination   --output-env-file containers-prepare-parameter.yaml
+openstack tripleo container image prepare  -e ~/containers-prepare-parameter.yaml  --roles-file /usr/share/openstack-tripleo-heat-templates/roles_data.yaml --output-env-file ~/containers-default-parameters.yaml
+
+Add -e /home/stack/containers-default-parameters.yaml to the overcloud-deploy.sh script. 
+
+8. Deploy the overcloud:
+Run ./overcloud-deploy.sh.
+
+9. Let's validate that VMs can actually start:
+./quickstart.sh --retain-inventory --teardown none --tags 'overcloud-validate' -R tripleo-master-ci --nodes nodes.yaml --config config.yaml 127.0.0.2
+
+This will spin up a VM and confirm (or not) if the overcloud is working okay.
