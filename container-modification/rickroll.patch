@@ -1,0 +1,49 @@
+diff -up ./barbican-7.0.0/barbican/api/controllers/secrets.py.ade ./barbican-7.0.0/barbican/api/controllers/secrets.py
+--- ./barbican-7.0.0/barbican/api/controllers/secrets.py.ade    2018-09-07 21:18:20.074332375 +0000
++++ ./barbican-7.0.0/barbican/api/controllers/secrets.py        2018-09-07 21:32:03.689324900 +0000
+@@ -421,6 +421,8 @@ class SecretsController(controllers.ACLM
+         LOG.debug('Start on_post for project-ID %s:...',
+                   external_project_id)
+
++        LOG.debug('XXXX: Never gonna give you up ...')
++
+         data = api.load_body(pecan.request, validator=self.validator)
+         project = res.get_or_create_project(external_project_id)
+
+@@ -444,12 +446,14 @@ class SecretsController(controllers.ACLM
+             transport_key_needed=transport_key_needed,
+             transport_key_id=data.get('transport_key_id'))
+
++        LOG.debug('XXXX - Nver gonna say goodbye ...')
+         url = hrefs.convert_secret_to_href(new_secret.id)
+         LOG.debug('URI to secret is %s', url)
+
+         pecan.response.status = 201
+         pecan.response.headers['Location'] = url
+
++        LOG.debug('Never gonna tell a lie and hurt you')
+         LOG.info('Created a secret for project: %s',
+                  external_project_id)
+         if transport_key_model is not None:
+diff -up ./barbican-7.0.0/barbican/plugin/crypto/simple_crypto.py.ade ./barbican-7.0.0/barbican/plugin/crypto/simple_crypto.py
+--- ./barbican-7.0.0/barbican/plugin/crypto/simple_crypto.py.ade        2018-09-07 21:22:55.691003315 +0000
++++ ./barbican-7.0.0/barbican/plugin/crypto/simple_crypto.py    2018-09-07 21:30:19.942696126 +0000
+@@ -73,8 +73,10 @@ class SimpleCryptoPlugin(c.CryptoPluginB
+         return encryptor.decrypt(kek_meta_dto.plugin_meta)
+
+     def encrypt(self, encrypt_dto, kek_meta_dto, project_id):
++        LOG.debug('XXXX - Nover going to let you down ...') 
+         kek = self._get_kek(kek_meta_dto)
+         unencrypted = encrypt_dto.unencrypted
++        LOG.debug('XXXX - Never gonna run around and desert you')
+         if not isinstance(unencrypted, six.binary_type):
+             raise ValueError(
+                 u._(
+@@ -86,6 +88,7 @@ class SimpleCryptoPlugin(c.CryptoPluginB
+             )
+         encryptor = fernet.Fernet(kek)
+         cyphertext = encryptor.encrypt(unencrypted)
++        LOG.debug('XXXX - Never gonna make you cry')
+         return c.ResponseDTO(cyphertext, None)
+
+     def decrypt(self, encrypted_dto, kek_meta_dto, kek_meta_extended,

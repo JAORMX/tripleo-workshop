@@ -66,3 +66,11 @@ A few examples for composable roles
        -e /usr/share/openstack-tripleo-heat-templates/environments/services/barbican.yaml \
        -e /home/stack/barbican-backend-simple-crypto.yaml \
        --control-scale 1 --compute-scale 0
+
+ #. Test to confirm that barbican and keystone are working.  From the undercloud::
+
+    source ./stackrc
+    openstack catalog list
+    openstack secret list
+    openstack secret store --payload "This is my super secret secret"
+    openstack secret get --payload ${secret_ref}

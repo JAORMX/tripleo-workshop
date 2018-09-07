@@ -50,6 +50,7 @@ You should get the following VMs:
 
 6. Generate a fencing.yaml
 Log on the undercloud (ssh -F ~/.quickstart/ssh.config.ansible undercloud) and run:
+source ./stackrc
 openstack overcloud generate fencing --ipmi-lanplus instackenv.json --output fencing.yaml
 
 Also add '-e /home/stack/fencing.yaml' to the overcloud-deploy.sh script.
@@ -58,10 +59,10 @@ Also add '-e /home/stack/fencing.yaml' to the overcloud-deploy.sh script.
 
 openstack flavor set --property resources:CUSTOM_BAREMETAL='1' --property resources:DISK_GB='0' --property resources:MEMORY_MB='0' --property resources:VCPU='0' oooq_control
 openstack flavor set --property resources:CUSTOM_BAREMETAL='1' --property resources:DISK_GB='0' --property resources:MEMORY_MB='0' --property resources:VCPU='0' oooq_compute
-docker pull 192.168.24.1:8787/tripleomaster/centos-binary-neutron-server:current-tripleo
 
-I don't know if this is needed or not.  According to Oz, it should not be.
-Going to redeploy to confirm.
+There seems to be a  bug whereby this image is not around -  192.168.24.1:8787/tripleomaster/centos-binary-neutron-server:current-tripleo
+
+Not sure how to fix this, and according to Oz, this should not be needed but I ended up doing this:
 
 openstack tripleo container image prepare default   --local-push-destination   --output-env-file containers-prepare-parameter.yaml
 openstack tripleo container image prepare  -e ~/containers-prepare-parameter.yaml  --roles-file /usr/share/openstack-tripleo-heat-templates/roles_data.yaml --output-env-file ~/containers-default-parameters.yaml
