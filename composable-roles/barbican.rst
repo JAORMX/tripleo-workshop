@@ -69,8 +69,8 @@ A few examples for composable roles
 
  #. Test to confirm that barbican and keystone are working.  From the undercloud::
 
-    source ./stackrc
-    openstack catalog list
-    openstack secret list
-    openstack secret store --payload "This is my super secret secret"
-    openstack secret get --payload ${secret_ref}
+      source ./overcloudrc
+      openstack catalog list
+      openstack secret list
+      openstack secret store --payload "This is my super secret secret"
+      openstack secret get --payload ${secret_ref}
